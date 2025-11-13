@@ -7,12 +7,16 @@ import com.cosmocats.cosmomarket.dto.order.OrderDto;
 import com.cosmocats.cosmomarket.dto.order.OrderItemDto;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring", uses = { ProductMapper.class })
 public interface OrderMapper {
 
+    @Mapping(target = "item", ignore = true)
+    @Mapping(target = "totalOrderPrice", ignore = true)
     OrderDto makeOrderDto(Order order);
+
     OrderItemDto makeOrderItemDto(OrderItem orderItem);
 
     @AfterMapping
