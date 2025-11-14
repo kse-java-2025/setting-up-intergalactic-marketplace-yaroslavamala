@@ -30,17 +30,21 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/gradle-wrapper.properties') }}
+          key: gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', 
+'**/gradle-wrapper.properties') }}
           restore-keys: |
             gradle-
 
       - name: Grant execute permission for Gradlew
         run: chmod +x ./gradlew
+	working-directory: cosmo-market
 
       # Run Gradle build and tests with coverage
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v3
         with:
+	  working-directory: cosmo-market
+	  arguments: test jacocoTestCoverageVerification
           cache-disabled: true
           generate-job-summary: false
 
@@ -49,4 +53,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-coverage-report
-          path: build/reports/coverage/index.html
+          path: cosmo-market/build/reports/coverage/index.html
