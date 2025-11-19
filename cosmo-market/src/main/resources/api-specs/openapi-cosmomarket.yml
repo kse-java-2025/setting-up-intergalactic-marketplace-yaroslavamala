@@ -1,0 +1,231 @@
+openapi: 3.0.0
+info:
+  title: Cosmo Cats Intergalactic Marketplace API
+  description: API for managing marketplace data
+  version: 1.0.0
+
+paths:
+  /api/v1/products:
+    get:
+      description: Get all products
+      tags:
+        - Products
+      responses:
+        '200':
+          description: List of all available products
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListDto'
+
+    post:
+      description: Create a new product
+      tags:
+        - Products
+      requestBody:
+        description: Product data for creating a new product
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateDto'
+      responses:
+        '201':
+          description: Product successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /api/v1/products/{id}:
+    get:
+      description: Get product by ID
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Unique ID of the product
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Product details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      description: Update an existing product
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Unique ID of the product
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Updated product information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateDto'
+      responses:
+        '200':
+          description: Product successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      description: Delete product by ID
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Unique ID of the product
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Product successfully deleted
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ProductDto:
+      type: object
+      description: Full product information
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the product
+        name:
+          type: string
+          maxLength: 200
+          description: Product name (must include a cosmic word such as "star", "galaxy", or "comet")
+        description:
+          type: string
+          maxLength: 500
+          description: Detailed description of the product
+        category:
+          type: string
+          description: Product category
+        availableQuantity:
+          type: number
+          format: integer
+          minimum: 0
+          description: Product available quantity
+        price:
+          type: number
+          format: double
+          minimum: 0.01
+          description: Price of the product
+      required:
+        - id
+        - name
+        - category
+        - availableQuantity
+        - price
+
+    ProductCreateDto:
+      allOf:
+        - $ref: '#/components/schemas/ProductDto'
+      required:
+        - name
+        - category
+        - availableQuantity
+        - price
+      description: Data required to create a new product
+
+    ProductUpdateDto:
+      allOf:
+        - $ref: '#/components/schemas/ProductDto'
+      description: Data required to update an existing product
+
+    ProductListDto:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDto'
+      description: List of products
+
+    ValidationError:
+      type: object
+      description: Returned when input validation fails
+      properties:
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "Field 'price' must be greater than 0"
+        path:
+          type: string
+          example: "/api/v1/products"
+
+    ErrorResponse:
+      type: object
+      description: General error response
+      properties:
+        type:
+          type: string
+          example: "about:blank"
+        title:
+          type: string
+          example: "Product not found"
+        status:
+          type: integer
+          example: 404
+        detail:
+          type: string
+          example: "No product found with given ID"
+        instance:
+          type: string
+          example: "/api/v1/products/123e4567-e89b-12d3-a456-426614174000"
