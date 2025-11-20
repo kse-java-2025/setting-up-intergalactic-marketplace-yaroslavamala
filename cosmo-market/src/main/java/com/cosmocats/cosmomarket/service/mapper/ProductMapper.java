@@ -16,6 +16,7 @@ public interface ProductMapper {
     @Mapping(target = "id", ignore = true)
     Product makeProduct(ProductCreateDto dto);
 
+    @Mapping(target = "id", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateBuilderFromDto(ProductUpdateDto dto, @MappingTarget Product.ProductBuilder builder);
 
