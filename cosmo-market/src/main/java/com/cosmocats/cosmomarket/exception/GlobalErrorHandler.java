@@ -2,11 +2,13 @@ package com.cosmocats.cosmomarket.exception;
 
 import com.cosmocats.cosmomarket.featuretoggle.exception.FeatureNotAvailableException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.NoSuchElementException;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -40,6 +42,11 @@ public class GlobalErrorHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorRecord> handleNotFound(NoSuchElementException exception, HttpServletRequest request) {
+        return buildResponse(NOT_FOUND, exception.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorRecord> handleProductNotFound(ProductNotFoundException exception, HttpServletRequest request) {
         return buildResponse(NOT_FOUND, exception.getMessage(), request.getRequestURI());
     }
 

@@ -5,6 +5,7 @@ import com.cosmocats.cosmomarket.domain.category.Category;
 import com.cosmocats.cosmomarket.dto.product.ProductCreateDto;
 import com.cosmocats.cosmomarket.dto.product.ProductReturnDto;
 import com.cosmocats.cosmomarket.dto.product.ProductUpdateDto;
+import com.cosmocats.cosmomarket.exception.ProductNotFoundException;
 import com.cosmocats.cosmomarket.service.ProductServiceInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
@@ -322,7 +323,7 @@ public class ProductControllerIT {
     @DisplayName("Should return 404 when product not found by id")
     @SneakyThrows
     void shouldReturn404WhenProductNotFound() {
-        when(productService.getProductById(PRODUCT_ID)).thenThrow(new java.util.NoSuchElementException("Product not found: " + PRODUCT_ID));
+        when(productService.getProductById(PRODUCT_ID)).thenThrow(new ProductNotFoundException(PRODUCT_ID));
 
         mockMvc.perform(get("/api/products/{id}", PRODUCT_ID)
                 .accept(MediaType.APPLICATION_JSON))
@@ -396,7 +397,7 @@ public class ProductControllerIT {
     @SneakyThrows
     void shouldReturn404WhenUpdatingNonExistentProduct() {
         ProductUpdateDto updateDto = buildProductUpdateDto();
-        when(productService.updateProduct(PRODUCT_ID, updateDto)).thenThrow(new java.util.NoSuchElementException("Product not found: " + PRODUCT_ID));
+        when(productService.updateProduct(PRODUCT_ID, updateDto)).thenThrow(new ProductNotFoundException(PRODUCT_ID));
 
         mockMvc.perform(put("/api/products/{id}", PRODUCT_ID)
                 .contentType(MediaType.APPLICATION_JSON)

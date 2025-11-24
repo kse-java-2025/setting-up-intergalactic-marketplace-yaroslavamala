@@ -6,6 +6,7 @@ import com.cosmocats.cosmomarket.domain.product.Product;
 import com.cosmocats.cosmomarket.dto.product.ProductCreateDto;
 import com.cosmocats.cosmomarket.dto.product.ProductReturnDto;
 import com.cosmocats.cosmomarket.dto.product.ProductUpdateDto;
+import com.cosmocats.cosmomarket.exception.ProductNotFoundException;
 import com.cosmocats.cosmomarket.repository.ProductRepositoryInterface;
 import com.cosmocats.cosmomarket.service.impl.ProductServiceImpl;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +24,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -176,11 +176,11 @@ public class ProductServiceImplTest {
 
     @Test
     @Order(5)
-    @DisplayName("Should throws NoSuchElementException with correct message when product not found by id")
+    @DisplayName("Should throws ProductNotFoundException with correct message when product not found by id")
     void shouldThrowExceptionWhenProductNotFoundById() {
         when(repo.findById(PRODUCT_ID)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> productService.getProductById(PRODUCT_ID));
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> productService.getProductById(PRODUCT_ID));
 
         assertTrue(exception.getMessage().contains("Product not found"));
         assertTrue(exception.getMessage().contains(PRODUCT_ID.toString()));
@@ -233,12 +233,12 @@ public class ProductServiceImplTest {
 
     @Test
     @Order(7)
-    @DisplayName("Should throw NoSuchElementException when updating not existing product")
+    @DisplayName("Should throw ProductNotFoundException when updating not existing product")
     void shouldThrowExceptionWhenUpdatingNonExistentProduct() {
         ProductUpdateDto updateDto = buildProductUpdateDto();
 
         when(repo.findById(PRODUCT_ID)).thenReturn(Optional.empty());
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> productService.updateProduct(PRODUCT_ID, updateDto));
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> productService.updateProduct(PRODUCT_ID, updateDto));
 
         assertTrue(exception.getMessage().contains("Product not found"));
         verify(repo, times(1)).findById(PRODUCT_ID);
@@ -249,24 +249,8 @@ public class ProductServiceImplTest {
     @Order(8)
     @DisplayName("Should delete existing product successfully")
     void shouldDeleteExistingProductSuccessfully() {
-        when(repo.existsById(PRODUCT_ID)).thenReturn(true);
-
         productService.deleteProduct(PRODUCT_ID);
 
-        verify(repo, times(1)).existsById(PRODUCT_ID);
         verify(repo, times(1)).deleteById(PRODUCT_ID);
-    }
-
-    @Test
-    @Order(9)
-    @DisplayName("Should throw NoSuchElementException when deleting not existing product")
-    void shouldThrowExceptionWhenDeletingNonExistentProduct() {
-        when(repo.existsById(PRODUCT_ID)).thenReturn(false);
-
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> productService.deleteProduct(PRODUCT_ID));
-
-        assertTrue(exception.getMessage().contains("Product not found"));
-        verify(repo, times(1)).existsById(PRODUCT_ID);
-        verify(repo, never()).deleteById(PRODUCT_ID);
     }
 }

@@ -14,9 +14,9 @@ public interface CartMapper {
 
     @Mapping(target = "item", ignore = true)
     @Mapping(target = "totalCartPrice", ignore = true)
-    CartDto makeCartDto(Cart cart);
+    CartDto buildCartDto(Cart cart);
 
-    CartItemDto makeCartItemDto(CartItem cartItem);
+    CartItemDto buildCartItemDto(CartItem cartItem);
 
     @AfterMapping
     default void fillTotalCartPrice(Cart source, @MappingTarget CartDto.CartDtoBuilder target) {

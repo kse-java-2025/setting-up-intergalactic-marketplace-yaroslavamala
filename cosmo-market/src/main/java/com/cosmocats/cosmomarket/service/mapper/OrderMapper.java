@@ -17,7 +17,7 @@ public interface OrderMapper {
     @Mapping(target = "totalOrderPrice", ignore = true)
     OrderDto makeOrderDto(Order order);
 
-    OrderItemDto makeOrderItemDto(OrderItem orderItem);
+    OrderItemDto buildOrderItemDto(OrderItem orderItem);
 
     @AfterMapping
     default void fillTotalOrderPrice(Order source, @MappingTarget OrderDto.OrderDtoBuilder target) {
