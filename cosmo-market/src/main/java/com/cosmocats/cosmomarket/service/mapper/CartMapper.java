@@ -6,12 +6,16 @@ import com.cosmocats.cosmomarket.dto.cart.CartDto;
 import com.cosmocats.cosmomarket.dto.cart.CartItemDto;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring", uses = { ProductMapper.class })
 public interface CartMapper {
 
+    @Mapping(target = "item", ignore = true)
+    @Mapping(target = "totalCartPrice", ignore = true)
     CartDto makeCartDto(Cart cart);
+
     CartItemDto makeCartItemDto(CartItem cartItem);
 
     @AfterMapping
