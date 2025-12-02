@@ -1,62 +1,73 @@
 package com.cosmocats.cosmomarket.exception;
 
+import java.util.List;
+import java.util.NoSuchElementException;
 import com.cosmocats.cosmomarket.featuretoggle.exception.FeatureNotAvailableException;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import java.util.NoSuchElementException;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import static java.net.URI.create;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.ProblemDetail.forStatusAndDetail;
 
 @RestControllerAdvice
-public class GlobalErrorHandler {
+@Slf4j
+public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
 
-    private ResponseEntity<ErrorRecord> buildResponse(HttpStatus status, String message, String path) {
-        ErrorRecord body = new ErrorRecord(status.value(), status.getReasonPhrase(), message, path);
-        return ResponseEntity.status(status).body(body);
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorRecord> handleValidation(MethodArgumentNotValidException exception, HttpServletRequest request) {
-        var errors = exception.getBindingResult().getFieldErrors();
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        List<FieldError> errors = exception.getBindingResult().getFieldErrors();
         var error = errors.isEmpty() ? null : errors.get(0);
         String message = (error == null)
                 ? "Validation failed"
                 : "Validation failed for object '%s': field '%s' %s".formatted(error.getObjectName(), error.getField(), error.getDefaultMessage());
-        return buildResponse(HttpStatus.BAD_REQUEST, message, request.getRequestURI());
+        ProblemDetail problemDetail = forStatusAndDetail(BAD_REQUEST, message);
+        problemDetail.setType(create("validation-error"));
+        problemDetail.setTitle("Validation failed");
+        return ResponseEntity.status(BAD_REQUEST).body(problemDetail);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorRecord> handleConstraint(ConstraintViolationException exception, HttpServletRequest request) {
-        return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request.getRequestURI());
-    }
-
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorRecord> handleNotReadable(HttpMessageNotReadableException exception, HttpServletRequest request) {
-        return buildResponse(HttpStatus.BAD_REQUEST, "Incorrect JSON body: %s".formatted(exception.getMessage()), request.getRequestURI());
+    ProblemDetail handleConstraint(ConstraintViolationException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(BAD_REQUEST, exception.getMessage());
+        problemDetail.setType(create("constraint-violation"));
+        problemDetail.setTitle("Constraint violation");
+        return problemDetail;
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ErrorRecord> handleNotFound(NoSuchElementException exception, HttpServletRequest request) {
-        return buildResponse(NOT_FOUND, exception.getMessage(), request.getRequestURI());
+    ProblemDetail handleNotFound(NoSuchElementException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
+        problemDetail.setType(create("not-found"));
+        problemDetail.setTitle("Resource not found");
+        return problemDetail;
     }
 
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<ErrorRecord> handleProductNotFound(ProductNotFoundException exception, HttpServletRequest request) {
-        return buildResponse(NOT_FOUND, exception.getMessage(), request.getRequestURI());
+    ProblemDetail handleProductNotFound(ProductNotFoundException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
+        problemDetail.setType(create("product-not-found"));
+        problemDetail.setTitle("Product not found");
+        return problemDetail;
     }
 
     @ExceptionHandler(FeatureNotAvailableException.class)
-    public ResponseEntity<ErrorRecord> handleFeatureNotAvailable(FeatureNotAvailableException exception, HttpServletRequest request) {
-        return buildResponse(NOT_FOUND, exception.getMessage(), request.getRequestURI());
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorRecord> handleAnyException(Exception exception, HttpServletRequest request) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), request.getRequestURI());
+    ProblemDetail handleFeatureNotAvailable(FeatureNotAvailableException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
+        problemDetail.setType(create("feature-disabled"));
+        problemDetail.setTitle("Feature not available");
+        return problemDetail;
     }
 }

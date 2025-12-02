@@ -156,14 +156,14 @@ public class ProductControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
@@ -179,14 +179,14 @@ public class ProductControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
@@ -202,14 +202,14 @@ public class ProductControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
@@ -225,14 +225,14 @@ public class ProductControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
@@ -248,14 +248,14 @@ public class ProductControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
@@ -272,14 +272,14 @@ public class ProductControllerIT {
         );
 
         mockMvc.perform(post("/api/v1/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
@@ -335,12 +335,12 @@ public class ProductControllerIT {
         when(productService.getProductById(PRODUCT_ID)).thenThrow(new ProductNotFoundException(PRODUCT_ID));
 
         mockMvc.perform(get("/api/v1/products/{id}", PRODUCT_ID)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("Not Found"))
-                .andExpect(jsonPath("$.message").value(PRODUCT_NOT_FOUND_MESSAGE + PRODUCT_ID));
+                .andExpect(jsonPath("$.title").value("Product not found"))
+                .andExpect(jsonPath("$.detail").value(PRODUCT_NOT_FOUND_MESSAGE + PRODUCT_ID));
     }
 
     @Test
@@ -379,14 +379,14 @@ public class ProductControllerIT {
                 .build();
 
         mockMvc.perform(put("/api/v1/products/{id}", PRODUCT_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
@@ -399,14 +399,14 @@ public class ProductControllerIT {
                 .build();
 
         mockMvc.perform(put("/api/v1/products/{id}", PRODUCT_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.error").value("Bad Request"))
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
@@ -417,14 +417,14 @@ public class ProductControllerIT {
         when(productService.updateProduct(PRODUCT_ID, updateDto)).thenThrow(new ProductNotFoundException(PRODUCT_ID));
 
         mockMvc.perform(put("/api/v1/products/{id}", PRODUCT_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.error").value("Not Found"))
-                .andExpect(jsonPath("$.message").value(PRODUCT_NOT_FOUND_MESSAGE + PRODUCT_ID));
+                .andExpect(jsonPath("$.title").value("Product not found"))
+                .andExpect(jsonPath("$.detail").value(PRODUCT_NOT_FOUND_MESSAGE + PRODUCT_ID));
     }
 
     @Test
