@@ -10,11 +10,11 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    ProductReturnDto makeProductReturnDto(Product product);
-    List<ProductReturnDto> makeListProductReturnDto(List<Product> products);
+    ProductReturnDto buildProductReturnDto(Product product);
+    List<ProductReturnDto> buildListProductReturnDto(List<Product> products);
 
     @Mapping(target = "id", ignore = true)
-    Product makeProduct(ProductCreateDto dto);
+    Product buildProduct(ProductCreateDto dto);
 
     @Mapping(target = "id", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

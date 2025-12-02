@@ -5,15 +5,13 @@ import com.cosmocats.cosmomarket.domain.category.Category;
 import com.cosmocats.cosmomarket.dto.product.ProductCreateDto;
 import com.cosmocats.cosmomarket.dto.product.ProductReturnDto;
 import com.cosmocats.cosmomarket.dto.product.ProductUpdateDto;
+import com.cosmocats.cosmomarket.exception.ProductNotFoundException;
 import com.cosmocats.cosmomarket.service.ProductServiceInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +39,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(MappersTestConfiguration.class)
 @DisplayName("Product Controller Integration Tests")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ProductControllerIT {
 
     private static final UUID PRODUCT_ID = UUID.randomUUID();
@@ -54,6 +51,7 @@ public class ProductControllerIT {
     private static final Integer AVAILABLE_QUANTITY = 100;
     private static final Integer UPDATED_QUANTITY = 50;
     private static final Category CATEGORY = Category.CLOTHES;
+    private static final String PRODUCT_NOT_FOUND_MESSAGE = "Product not found: ";
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -79,8 +77,7 @@ public class ProductControllerIT {
                 .build();
     }
 
-    private static ProductCreateDto buildInvalidProductCreateDto(String name, String description,
-                                                                  Category category, Integer quantity, BigDecimal price) {
+    private static ProductCreateDto buildInvalidProductCreateDto(String name, String description, Category category, Integer quantity, BigDecimal price) {
         return ProductCreateDto.builder()
                 .name(name)
                 .description(description)
@@ -129,14 +126,13 @@ public class ProductControllerIT {
 
     @ParameterizedTest
     @MethodSource("provideValidProductCreateDtos")
-    @Order(1)
     @DisplayName("Should create product successfully with valid data")
     @SneakyThrows
     void shouldCreateProductWithValidData(ProductCreateDto createDto) {
         ProductReturnDto returnDto = buildProductReturnDto();
         when(productService.createNewProduct(any(ProductCreateDto.class))).thenReturn(returnDto);
 
-        mockMvc.perform(post("/api/products")
+        mockMvc.perform(post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto)))
@@ -148,7 +144,6 @@ public class ProductControllerIT {
     }
 
     @Test
-    @Order(2)
     @DisplayName("Should reject request with null (blank) product name")
     @SneakyThrows
     void shouldRejectBlankProductName() {
@@ -160,15 +155,18 @@ public class ProductControllerIT {
                 PRICE
         );
 
-        mockMvc.perform(post("/api/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @Order(3)
     @DisplayName("Should reject request with negative price")
     @SneakyThrows
     void shouldRejectNegativePrice() {
@@ -180,15 +178,18 @@ public class ProductControllerIT {
                 BigDecimal.valueOf(-5.0)
         );
 
-        mockMvc.perform(post("/api/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @Order(4)
     @DisplayName("Should reject request with zero price")
     @SneakyThrows
     void shouldRejectZeroPrice() {
@@ -200,15 +201,18 @@ public class ProductControllerIT {
                 BigDecimal.ZERO
         );
 
-        mockMvc.perform(post("/api/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @Order(5)
     @DisplayName("Should reject request with null category")
     @SneakyThrows
     void shouldRejectNullCategory() {
@@ -220,15 +224,18 @@ public class ProductControllerIT {
                 PRICE
         );
 
-        mockMvc.perform(post("/api/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @Order(6)
     @DisplayName("Should reject request with negative quantity")
     @SneakyThrows
     void shouldRejectNegativeQuantity() {
@@ -240,15 +247,18 @@ public class ProductControllerIT {
                 PRICE
         );
 
-        mockMvc.perform(post("/api/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @Order(7)
     @DisplayName("Should reject request with description exceeding 255 characters")
     @SneakyThrows
     void shouldRejectDescriptionTooLong() {
@@ -261,22 +271,25 @@ public class ProductControllerIT {
                 PRICE
         );
 
-        mockMvc.perform(post("/api/products")
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @Order(8)
     @DisplayName("Should return all products successfully")
     @SneakyThrows
     void shouldReturnAllProductsSuccessfully() {
         when(productService.getAllProducts()).thenReturn(java.util.List.of( buildProductReturnDto(PRODUCT_ID, PRODUCT_NAME),
                 buildProductReturnDto(ANOTHER_PRODUCT_ID, UPDATED_PRODUCT_NAME)));
 
-        mockMvc.perform(get("/api/products")
+        mockMvc.perform(get("/api/v1/products")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -286,13 +299,12 @@ public class ProductControllerIT {
     }
 
     @Test
-    @Order(9)
     @DisplayName("Should return empty list when no products exist")
     @SneakyThrows
     void shouldReturnEmptyList() {
         when(productService.getAllProducts()).thenReturn(java.util.List.of());
 
-        mockMvc.perform(get("/api/products")
+        mockMvc.perform(get("/api/v1/products")
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -301,14 +313,13 @@ public class ProductControllerIT {
     }
 
     @Test
-    @Order(10)
     @DisplayName("Should get product by id successfully")
     @SneakyThrows
     void shouldGetProductByIdSuccessfully() {
         ProductReturnDto returnDto = buildProductReturnDto();
         when(productService.getProductById(PRODUCT_ID)).thenReturn(returnDto);
 
-        mockMvc.perform(get("/api/products/{id}", PRODUCT_ID)
+        mockMvc.perform(get("/api/v1/products/{id}", PRODUCT_ID)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -318,19 +329,21 @@ public class ProductControllerIT {
     }
 
     @Test
-    @Order(11)
     @DisplayName("Should return 404 when product not found by id")
     @SneakyThrows
     void shouldReturn404WhenProductNotFound() {
-        when(productService.getProductById(PRODUCT_ID)).thenThrow(new java.util.NoSuchElementException("Product not found: " + PRODUCT_ID));
+        when(productService.getProductById(PRODUCT_ID)).thenThrow(new ProductNotFoundException(PRODUCT_ID));
 
-        mockMvc.perform(get("/api/products/{id}", PRODUCT_ID)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/v1/products/{id}", PRODUCT_ID)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Product not found"))
+                .andExpect(jsonPath("$.detail").value(PRODUCT_NOT_FOUND_MESSAGE + PRODUCT_ID));
     }
 
     @Test
-    @Order(12)
     @DisplayName("Should update with valid data product successfully")
     @SneakyThrows
     void shouldUpdateProductSuccessfully() {
@@ -346,7 +359,7 @@ public class ProductControllerIT {
 
         when(productService.updateProduct(PRODUCT_ID, updateDto)).thenReturn(returnDto);
 
-        mockMvc.perform(put("/api/products/{id}", PRODUCT_ID)
+        mockMvc.perform(put("/api/v1/products/{id}", PRODUCT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateDto)))
@@ -357,7 +370,6 @@ public class ProductControllerIT {
     }
 
     @Test
-    @Order(13)
     @DisplayName("Should reject update with negative price")
     @SneakyThrows
     void shouldRejectUpdateWithNegativePrice() {
@@ -366,15 +378,18 @@ public class ProductControllerIT {
                 .price(BigDecimal.valueOf(-10.0))
                 .build();
 
-        mockMvc.perform(put("/api/products/{id}", PRODUCT_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/api/v1/products/{id}", PRODUCT_ID)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @Order(14)
     @DisplayName("Should reject update with negative quantity")
     @SneakyThrows
     void shouldRejectUpdateWithNegativeQuantity() {
@@ -383,34 +398,40 @@ public class ProductControllerIT {
                 .availableQuantity(-50)
                 .build();
 
-        mockMvc.perform(put("/api/products/{id}", PRODUCT_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/api/v1/products/{id}", PRODUCT_ID)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @Order(15)
     @DisplayName("Should return 404 when updating not existing product")
     @SneakyThrows
     void shouldReturn404WhenUpdatingNonExistentProduct() {
         ProductUpdateDto updateDto = buildProductUpdateDto();
-        when(productService.updateProduct(PRODUCT_ID, updateDto)).thenThrow(new java.util.NoSuchElementException("Product not found: " + PRODUCT_ID));
+        when(productService.updateProduct(PRODUCT_ID, updateDto)).thenThrow(new ProductNotFoundException(PRODUCT_ID));
 
-        mockMvc.perform(put("/api/products/{id}", PRODUCT_ID)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/api/v1/products/{id}", PRODUCT_ID)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(updateDto)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value("Product not found"))
+                .andExpect(jsonPath("$.detail").value(PRODUCT_NOT_FOUND_MESSAGE + PRODUCT_ID));
     }
 
     @Test
-    @Order(16)
     @DisplayName("Should delete product successfully")
     @SneakyThrows
     void shouldDeleteProductSuccessfully() {
-        mockMvc.perform(delete("/api/products/{id}", PRODUCT_ID)
+        mockMvc.perform(delete("/api/v1/products/{id}", PRODUCT_ID)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }

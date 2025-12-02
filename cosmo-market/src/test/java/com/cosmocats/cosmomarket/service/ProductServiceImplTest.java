@@ -6,13 +6,11 @@ import com.cosmocats.cosmomarket.domain.product.Product;
 import com.cosmocats.cosmomarket.dto.product.ProductCreateDto;
 import com.cosmocats.cosmomarket.dto.product.ProductReturnDto;
 import com.cosmocats.cosmomarket.dto.product.ProductUpdateDto;
+import com.cosmocats.cosmomarket.exception.ProductNotFoundException;
 import com.cosmocats.cosmomarket.repository.ProductRepositoryInterface;
 import com.cosmocats.cosmomarket.service.impl.ProductServiceImpl;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
@@ -23,7 +21,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -34,7 +31,6 @@ import static org.mockito.Mockito.*;
 @SpringBootTest(classes = {ProductServiceImpl.class})
 @Import(MappersTestConfiguration.class)
 @DisplayName("Product Service Tests")
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ProductServiceImplTest {
 
     private static final UUID PRODUCT_ID = UUID.randomUUID();
@@ -57,25 +53,14 @@ public class ProductServiceImplTest {
     @Autowired
     private ProductServiceImpl productService;
 
-    private static Product buildProduct(String name, BigDecimal price) {
-        return Product.builder()
-                .id(PRODUCT_ID)
-                .name(name)
-                .description(PRODUCT_DESCRIPTION)
-                .category(CATEGORY)
-                .availableQuantity(AVAILABLE_QUANTITY)
-                .price(price)
-                .build();
-    }
-
-    private static Product buildProduct(UUID id, String name) {
+    private static Product buildProduct(UUID id, String name, BigDecimal price) {
         return Product.builder()
                 .id(id)
                 .name(name)
                 .description(PRODUCT_DESCRIPTION)
                 .category(CATEGORY)
                 .availableQuantity(AVAILABLE_QUANTITY)
-                .price(PRICE)
+                .price(price)
                 .build();
     }
 
@@ -107,10 +92,9 @@ public class ProductServiceImplTest {
 
     @ParameterizedTest
     @MethodSource("provideProductCreateDtos")
-    @Order(1)
     @DisplayName("Should create new product successfully for different inputs")
     void shouldCreateNewProductSuccessfully(ProductCreateDto createDto) {
-        Product savedProduct = buildProduct(createDto.getName(), createDto.getPrice());
+        Product savedProduct = buildProduct(PRODUCT_ID, createDto.getName(), createDto.getPrice());
 
         when(repo.saveProduct(any(Product.class))).thenReturn(savedProduct);
 
@@ -129,11 +113,10 @@ public class ProductServiceImplTest {
     }
 
     @Test
-    @Order(2)
     @DisplayName("Should return all products successfully")
     void shouldReturnAllProductsSuccessfully() {
-        Product product1 = buildProduct(PRODUCT_ID, PRODUCT_NAME);
-        Product product2 = buildProduct(ANOTHER_PRODUCT_ID, UPDATED_PRODUCT_NAME);
+        Product product1 = buildProduct(PRODUCT_ID, PRODUCT_NAME, PRICE);
+        Product product2 = buildProduct(ANOTHER_PRODUCT_ID, UPDATED_PRODUCT_NAME,  PRICE);
         List<Product> allProducts = List.of(product1, product2);
 
         when(repo.getAllProducts()).thenReturn(allProducts);
@@ -145,9 +128,7 @@ public class ProductServiceImplTest {
         verify(repo, times(1)).getAllProducts();
     }
 
-    @Test
-    @Order(3)
-    @DisplayName("Should return empty list when no products exist")
+    @Test @DisplayName("Should return empty list when no products exist")
     void shouldReturnEmptyListWhenNoProducts() {
         when(repo.getAllProducts()).thenReturn(List.of());
 
@@ -159,10 +140,9 @@ public class ProductServiceImplTest {
     }
 
     @Test
-    @Order(4)
     @DisplayName("Should get product by id successfully")
     void shouldGetProductByIdSuccessfully() {
-        Product product = buildProduct(PRODUCT_NAME, PRICE);
+        Product product = buildProduct(PRODUCT_ID, PRODUCT_NAME, PRICE);
 
         when(repo.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
 
@@ -175,12 +155,11 @@ public class ProductServiceImplTest {
     }
 
     @Test
-    @Order(5)
-    @DisplayName("Should throws NoSuchElementException with correct message when product not found by id")
+    @DisplayName("Should throws ProductNotFoundException with correct message when product not found by id")
     void shouldThrowExceptionWhenProductNotFoundById() {
         when(repo.findById(PRODUCT_ID)).thenReturn(Optional.empty());
 
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> productService.getProductById(PRODUCT_ID));
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> productService.getProductById(PRODUCT_ID));
 
         assertTrue(exception.getMessage().contains("Product not found"));
         assertTrue(exception.getMessage().contains(PRODUCT_ID.toString()));
@@ -188,10 +167,9 @@ public class ProductServiceImplTest {
     }
 
     @Test
-    @Order(6)
     @DisplayName("Should update provided product fields successfully and no change others fields")
     void shouldUpdateProductSuccessfully() {
-        Product existingProduct = buildProduct(PRODUCT_NAME, PRICE);
+        Product existingProduct = buildProduct(PRODUCT_ID, PRODUCT_NAME, PRICE);
         ProductUpdateDto updateDto = buildProductUpdateDto();
         Product updatedProduct = Product.builder()
                 .id(existingProduct.getId())
@@ -232,13 +210,12 @@ public class ProductServiceImplTest {
     }
 
     @Test
-    @Order(7)
-    @DisplayName("Should throw NoSuchElementException when updating not existing product")
+    @DisplayName("Should throw ProductNotFoundException when updating not existing product")
     void shouldThrowExceptionWhenUpdatingNonExistentProduct() {
         ProductUpdateDto updateDto = buildProductUpdateDto();
 
         when(repo.findById(PRODUCT_ID)).thenReturn(Optional.empty());
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> productService.updateProduct(PRODUCT_ID, updateDto));
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> productService.updateProduct(PRODUCT_ID, updateDto));
 
         assertTrue(exception.getMessage().contains("Product not found"));
         verify(repo, times(1)).findById(PRODUCT_ID);
@@ -246,27 +223,10 @@ public class ProductServiceImplTest {
     }
 
     @Test
-    @Order(8)
     @DisplayName("Should delete existing product successfully")
     void shouldDeleteExistingProductSuccessfully() {
-        when(repo.existsById(PRODUCT_ID)).thenReturn(true);
-
         productService.deleteProduct(PRODUCT_ID);
 
-        verify(repo, times(1)).existsById(PRODUCT_ID);
         verify(repo, times(1)).deleteById(PRODUCT_ID);
-    }
-
-    @Test
-    @Order(9)
-    @DisplayName("Should throw NoSuchElementException when deleting not existing product")
-    void shouldThrowExceptionWhenDeletingNonExistentProduct() {
-        when(repo.existsById(PRODUCT_ID)).thenReturn(false);
-
-        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> productService.deleteProduct(PRODUCT_ID));
-
-        assertTrue(exception.getMessage().contains("Product not found"));
-        verify(repo, times(1)).existsById(PRODUCT_ID);
-        verify(repo, never()).deleteById(PRODUCT_ID);
     }
 }
