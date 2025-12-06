@@ -1,5 +1,6 @@
 package com.cosmocats.cosmomarket.web;
 
+import com.cosmocats.cosmomarket.AbstractIT;
 import com.cosmocats.cosmomarket.config.MappersTestConfiguration;
 import com.cosmocats.cosmomarket.dto.order.OrderDto;
 import com.cosmocats.cosmomarket.dto.order.OrderItemCreateDto;
@@ -41,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(MappersTestConfiguration.class)
 @DisplayName("Order Controller Integration Tests")
-public class OrderControllerIT {
+public class OrderControllerIT extends AbstractIT {
 
     private static final UUID ORDER_ID = UUID.randomUUID();
     private static final UUID PRODUCT_ID = UUID.randomUUID();

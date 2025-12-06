@@ -1,5 +1,6 @@
 package com.cosmocats.cosmomarket.web;
 
+import com.cosmocats.cosmomarket.AbstractIT;
 import com.cosmocats.cosmomarket.config.MappersTestConfiguration;
 import com.cosmocats.cosmomarket.dto.category.CategoryCreateDto;
 import com.cosmocats.cosmomarket.dto.category.CategoryReturnDto;
@@ -37,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(MappersTestConfiguration.class)
 @DisplayName("Category Controller Integration Tests")
-public class CategoryControllerIT {
+public class CategoryControllerIT extends AbstractIT {
 
     private static final Long CATEGORY_ID = 1L;
     private static final Long ANOTHER_CATEGORY_ID = 2L;

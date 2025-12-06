@@ -1,5 +1,6 @@
 package com.cosmocats.cosmomarket.web;
 
+import com.cosmocats.cosmomarket.AbstractIT;
 import com.cosmocats.cosmomarket.config.MappersTestConfiguration;
 import com.cosmocats.cosmomarket.dto.cart.CartDto;
 import com.cosmocats.cosmomarket.dto.cart.CartItemCreateDto;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Import(MappersTestConfiguration.class)
 @DisplayName("Cart Controller Integration Tests")
-public class CartControllerIT {
+public class CartControllerIT extends AbstractIT {
 
     private static final UUID CART_ID = UUID.randomUUID();
     private static final UUID PRODUCT_ID = UUID.randomUUID();
