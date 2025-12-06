@@ -1,5 +1,6 @@
 package com.cosmocats.cosmomarket.service;
 
+import com.cosmocats.cosmomarket.AbstractIT;
 import com.cosmocats.cosmomarket.domain.cosmocat.CosmoCat;
 import com.cosmocats.cosmomarket.featuretoggle.FeatureToggleService;
 import com.cosmocats.cosmomarket.featuretoggle.FeatureToggles;
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @DisplayName("Cosmo Cat Service Tests")
-class CosmoCatServiceTest {
+class CosmoCatServiceTest extends AbstractIT {
 
     private static final String COSMO_CATS_FEATURE_NAME = FeatureToggles.COSMO_CATS.getFeatureName();
 

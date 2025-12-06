@@ -59,6 +59,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
     testImplementation 'org.projectlombok:lombok:1.18.34'
     testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
