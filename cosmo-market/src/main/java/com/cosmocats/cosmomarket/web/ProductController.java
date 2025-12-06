@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @RestController
 @Validated
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 public class ProductController {
 
     private final ProductServiceInterface service;
@@ -24,28 +24,28 @@ public class ProductController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductReturnDto create(@Valid @RequestBody ProductCreateDto dto) {
+    public ProductReturnDto createProduct(@Valid @RequestBody ProductCreateDto dto) {
         return service.createNewProduct(dto);
     }
 
     @GetMapping
-    public List<ProductReturnDto> list() {
+    public List<ProductReturnDto> getAllProducts() {
         return service.getAllProducts();
     }
 
     @GetMapping("/{id}")
-    public ProductReturnDto get(@PathVariable UUID id) {
+    public ProductReturnDto getProductById(@PathVariable UUID id) {
         return service.getProductById(id);
     }
 
     @PutMapping("/{id}")
-    public ProductReturnDto update(@PathVariable UUID id, @Valid @RequestBody ProductUpdateDto dto) {
+    public ProductReturnDto updateProduct(@PathVariable UUID id, @Valid @RequestBody ProductUpdateDto dto) {
         return service.updateProduct(id, dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) {
+    public void deleteProduct(@PathVariable UUID id) {
         service.deleteProduct(id);
     }
 }

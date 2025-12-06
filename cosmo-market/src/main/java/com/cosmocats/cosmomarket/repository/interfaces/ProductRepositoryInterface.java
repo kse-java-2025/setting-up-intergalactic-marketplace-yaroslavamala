@@ -1,4 +1,4 @@
-package com.cosmocats.cosmomarket.repository;
+package com.cosmocats.cosmomarket.repository.interfaces;
 
 import com.cosmocats.cosmomarket.domain.product.Product;
 import java.util.List;

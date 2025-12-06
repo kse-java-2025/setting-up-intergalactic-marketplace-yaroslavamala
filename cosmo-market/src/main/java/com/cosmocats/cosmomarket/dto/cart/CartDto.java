@@ -5,6 +5,7 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import java.util.UUID;
 @Jacksonized
 public class CartDto {
     UUID id;
+    OffsetDateTime createdAt;
 
     @Singular("item")
     List<CartItemDto> items;

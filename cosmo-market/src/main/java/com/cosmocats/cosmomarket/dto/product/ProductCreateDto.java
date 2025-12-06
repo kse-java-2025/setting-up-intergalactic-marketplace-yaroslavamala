@@ -1,8 +1,11 @@
 package com.cosmocats.cosmomarket.dto.product;
 
-import com.cosmocats.cosmomarket.domain.category.Category;
 import com.cosmocats.cosmomarket.validation.CosmicWordCheck;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -20,8 +23,8 @@ public class ProductCreateDto {
     @Size(max = 255, message = "description is max 255 chars")
     String description;
 
-    @NotNull(message = "category is required, must be one of food/clothes/accessory/medical/other")
-    Category category;
+    @NotNull(message = "category ID is required")
+    Long categoryId;
 
     @NotNull
     @Min(value = 0, message = "available quantity must be >= 0")

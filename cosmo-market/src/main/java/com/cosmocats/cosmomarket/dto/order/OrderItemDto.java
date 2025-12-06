@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Value
 @Builder
 @Jacksonized
 public class OrderItemDto {
+    UUID id;
     ProductReturnDto product;
     Integer quantity;
     BigDecimal itemPrice;
