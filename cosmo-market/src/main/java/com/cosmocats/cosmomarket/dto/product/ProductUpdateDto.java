@@ -1,8 +1,9 @@
 package com.cosmocats.cosmomarket.dto.product;
 
-import com.cosmocats.cosmomarket.domain.category.Category;
 import com.cosmocats.cosmomarket.validation.CosmicWordCheck;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -19,7 +20,7 @@ public class ProductUpdateDto {
     @Size(max = 255)
     String description;
 
-    Category category;
+    Long categoryId;
 
     @Min(0)
     Integer availableQuantity;

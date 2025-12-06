@@ -1,28 +1,30 @@
 package com.cosmocats.cosmomarket.service.mapper;
 
-import com.cosmocats.cosmomarket.domain.product.Product;
 import com.cosmocats.cosmomarket.dto.product.ProductCreateDto;
 import com.cosmocats.cosmomarket.dto.product.ProductReturnDto;
 import com.cosmocats.cosmomarket.dto.product.ProductUpdateDto;
-import org.mapstruct.*;
+import com.cosmocats.cosmomarket.repository.entity.ProductEntity;
+import org.mapstruct.BeanMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    ProductReturnDto buildProductReturnDto(Product product);
-    List<ProductReturnDto> buildListProductReturnDto(List<Product> products);
+    @Mapping(source = "category.id", target = "categoryId")
+    ProductReturnDto buildProductReturnDto(ProductEntity product);
+
+    List<ProductReturnDto> buildListProductReturnDto(List<ProductEntity> products);
 
     @Mapping(target = "id", ignore = true)
-    Product buildProduct(ProductCreateDto dto);
+    @Mapping(target = "category", ignore = true)
+    ProductEntity buildProduct(ProductCreateDto dto);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "category", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateBuilderFromDto(ProductUpdateDto dto, @MappingTarget Product.ProductBuilder builder);
-
-    default Product applyUpdate(Product current, ProductUpdateDto dto) {
-        Product.ProductBuilder builder = current.toBuilder();
-        updateBuilderFromDto(dto, builder);
-        return builder.build();
-    }
+    void updateEntityFromDto(ProductUpdateDto dto, @MappingTarget ProductEntity entity);
 }

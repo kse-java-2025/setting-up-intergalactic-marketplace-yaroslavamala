@@ -1,58 +1,75 @@
 package com.cosmocats.cosmomarket.service.impl;
 
-import com.cosmocats.cosmomarket.domain.product.Product;
 import com.cosmocats.cosmomarket.dto.product.ProductCreateDto;
 import com.cosmocats.cosmomarket.dto.product.ProductReturnDto;
 import com.cosmocats.cosmomarket.dto.product.ProductUpdateDto;
+import com.cosmocats.cosmomarket.exception.CategoryNotFoundException;
 import com.cosmocats.cosmomarket.exception.ProductNotFoundException;
-import com.cosmocats.cosmomarket.repository.ProductRepositoryInterface;
+import com.cosmocats.cosmomarket.repository.CategoryRepository;
+import com.cosmocats.cosmomarket.repository.ProductRepository;
+import com.cosmocats.cosmomarket.repository.entity.CategoryEntity;
+import com.cosmocats.cosmomarket.repository.entity.ProductEntity;
 import com.cosmocats.cosmomarket.service.ProductServiceInterface;
 import com.cosmocats.cosmomarket.service.mapper.ProductMapper;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@AllArgsConstructor
 public class ProductServiceImpl implements ProductServiceInterface {
 
-    private final ProductRepositoryInterface repo;
+    private final ProductRepository productRepo;
+    private final CategoryRepository categoryRepo;
     private final ProductMapper productMapper;
 
-    public ProductServiceImpl(ProductRepositoryInterface repo, ProductMapper mapper) {
-        this.repo = repo;
-        this.productMapper = mapper;
-    }
-
     @Override
+    @Transactional
     public ProductReturnDto createNewProduct(ProductCreateDto dto) {
-        Product toSaveProduct = productMapper.buildProduct(dto);
-        Product savedProduct = repo.saveProduct(toSaveProduct);
+        long categoryId = dto.getCategoryId();
+        CategoryEntity category = categoryRepo.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+
+        ProductEntity toSaveProduct = productMapper.buildProduct(dto);
+        toSaveProduct.setCategory(category);
+        ProductEntity savedProduct = productRepo.save(toSaveProduct);
         return productMapper.buildProductReturnDto(savedProduct);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProductReturnDto> getAllProducts() {
-        return productMapper.buildListProductReturnDto(repo.getAllProducts());
+        return productMapper.buildListProductReturnDto(productRepo.findAll());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductReturnDto getProductById(UUID id) {
-        Product product = repo.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        ProductEntity product = productRepo.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
         return productMapper.buildProductReturnDto(product);
     }
 
     @Override
+    @Transactional
     public ProductReturnDto updateProduct(UUID id, ProductUpdateDto dto) {
-        Product existingProduct = repo.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        ProductEntity existingProduct = productRepo.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
 
-        Product updatedProduct = productMapper.applyUpdate(existingProduct, dto);
-        Product savedProduct = repo.saveProduct(updatedProduct);
+        if (dto.getCategoryId() != null) {
+            long categoryId = dto.getCategoryId();
+            CategoryEntity category = categoryRepo.findById(categoryId).orElseThrow(() -> new CategoryNotFoundException(categoryId));
+            existingProduct.setCategory(category);
+        }
 
+        productMapper.updateEntityFromDto(dto, existingProduct);
+        ProductEntity savedProduct = productRepo.save(existingProduct);
+        
         return productMapper.buildProductReturnDto(savedProduct);
     }
 
     @Override
+    @Transactional
     public void deleteProduct(UUID id) {
-        repo.deleteById(id);
+        productRepo.deleteById(id);
     }
 }

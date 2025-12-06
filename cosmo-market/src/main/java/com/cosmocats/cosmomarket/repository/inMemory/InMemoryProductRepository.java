@@ -1,9 +1,8 @@
-package com.cosmocats.cosmomarket.repository;
+package com.cosmocats.cosmomarket.repository.inMemory;
 
 import com.cosmocats.cosmomarket.domain.product.Product;
-import com.cosmocats.cosmomarket.domain.category.Category;
+import com.cosmocats.cosmomarket.repository.interfaces.ProductRepositoryInterface;
 import org.springframework.stereotype.Repository;
-
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +18,7 @@ public class InMemoryProductRepository implements ProductRepositoryInterface {
                 .id(id1)
                 .name("Cosmo Coffee Example")
                 .description("Space beans")
-                .category(Category.FOOD)
+                .categoryId(10L)
                 .availableQuantity(42)
                 .price(new BigDecimal("9.99"))
                 .build());
@@ -27,7 +26,7 @@ public class InMemoryProductRepository implements ProductRepositoryInterface {
                 .id(id2)
                 .name("Galaxy Coat Example")
                 .description("Beautiful comfy coat")
-                .category(Category.CLOTHES)
+                .categoryId(20L)
                 .availableQuantity(10)
                 .price(new BigDecimal("19.95"))
                 .build());

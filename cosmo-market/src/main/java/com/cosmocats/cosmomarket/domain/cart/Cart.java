@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,6 +13,9 @@ import java.util.UUID;
 public class Cart {
     @Builder.Default
     UUID id = UUID.randomUUID();
+
+    @Builder.Default
+    OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Singular("item")
     List<CartItem> items;

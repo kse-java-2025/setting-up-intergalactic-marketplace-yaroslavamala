@@ -1,10 +1,10 @@
 package com.cosmocats.cosmomarket.web;
 
 import com.cosmocats.cosmomarket.config.MappersTestConfiguration;
-import com.cosmocats.cosmomarket.domain.category.Category;
 import com.cosmocats.cosmomarket.dto.product.ProductCreateDto;
 import com.cosmocats.cosmomarket.dto.product.ProductReturnDto;
 import com.cosmocats.cosmomarket.dto.product.ProductUpdateDto;
+import com.cosmocats.cosmomarket.exception.CategoryNotFoundException;
 import com.cosmocats.cosmomarket.exception.ProductNotFoundException;
 import com.cosmocats.cosmomarket.service.ProductServiceInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,8 +50,10 @@ public class ProductControllerIT {
     private static final BigDecimal UPDATED_PRICE = BigDecimal.valueOf(15.99);
     private static final Integer AVAILABLE_QUANTITY = 100;
     private static final Integer UPDATED_QUANTITY = 50;
-    private static final Category CATEGORY = Category.CLOTHES;
-    private static final String PRODUCT_NOT_FOUND_MESSAGE = "Product not found: ";
+    private static final Long CATEGORY_ID = 10L;
+    private static final String PRODUCT_NOT_FOUND_MESSAGE = "Product not found";
+    private static final String VALIDATION_FAILED_MESSAGE = "Validation failed";
+    private static final String CATEGORY_NOT_FOUND_MESSAGE = "Category not found";
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -71,17 +73,17 @@ public class ProductControllerIT {
         return ProductCreateDto.builder()
                 .name(name)
                 .description(PRODUCT_DESCRIPTION)
-                .category(CATEGORY)
+                .categoryId(CATEGORY_ID)
                 .availableQuantity(AVAILABLE_QUANTITY)
                 .price(price)
                 .build();
     }
 
-    private static ProductCreateDto buildInvalidProductCreateDto(String name, String description, Category category, Integer quantity, BigDecimal price) {
+    private static ProductCreateDto buildInvalidProductCreateDto(String name, String description, long category, Integer quantity, BigDecimal price) {
         return ProductCreateDto.builder()
                 .name(name)
                 .description(description)
-                .category(category)
+                .categoryId(category)
                 .availableQuantity(quantity)
                 .price(price)
                 .build();
@@ -99,7 +101,7 @@ public class ProductControllerIT {
                 .id(PRODUCT_ID)
                 .name(PRODUCT_NAME)
                 .description(PRODUCT_DESCRIPTION)
-                .category(CATEGORY)
+                .categoryId(CATEGORY_ID)
                 .availableQuantity(AVAILABLE_QUANTITY)
                 .price(PRICE)
                 .build();
@@ -110,7 +112,7 @@ public class ProductControllerIT {
                 .id(id)
                 .name(name)
                 .description(PRODUCT_DESCRIPTION)
-                .category(CATEGORY)
+                .categoryId(CATEGORY_ID)
                 .availableQuantity(AVAILABLE_QUANTITY)
                 .price(PRICE)
                 .build();
@@ -150,7 +152,7 @@ public class ProductControllerIT {
         ProductCreateDto invalidDto = buildInvalidProductCreateDto(
                 "",
                 PRODUCT_DESCRIPTION,
-                CATEGORY,
+                CATEGORY_ID,
                 AVAILABLE_QUANTITY,
                 PRICE
         );
@@ -162,7 +164,7 @@ public class ProductControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title").value(VALIDATION_FAILED_MESSAGE))
                 .andExpect(jsonPath("$.detail").exists());
     }
 
@@ -173,7 +175,7 @@ public class ProductControllerIT {
         ProductCreateDto invalidDto = buildInvalidProductCreateDto(
                 PRODUCT_NAME,
                 PRODUCT_DESCRIPTION,
-                CATEGORY,
+                CATEGORY_ID,
                 AVAILABLE_QUANTITY,
                 BigDecimal.valueOf(-5.0)
         );
@@ -185,7 +187,7 @@ public class ProductControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title").value(VALIDATION_FAILED_MESSAGE))
                 .andExpect(jsonPath("$.detail").exists());
     }
 
@@ -196,7 +198,7 @@ public class ProductControllerIT {
         ProductCreateDto invalidDto = buildInvalidProductCreateDto(
                 PRODUCT_NAME,
                 PRODUCT_DESCRIPTION,
-                CATEGORY,
+                CATEGORY_ID,
                 AVAILABLE_QUANTITY,
                 BigDecimal.ZERO
         );
@@ -208,30 +210,31 @@ public class ProductControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title").value(VALIDATION_FAILED_MESSAGE))
                 .andExpect(jsonPath("$.detail").exists());
     }
 
     @Test
-    @DisplayName("Should reject request with null category")
+    @DisplayName("Should return not found to request with incorrect category")
     @SneakyThrows
     void shouldRejectNullCategory() {
         ProductCreateDto invalidDto = buildInvalidProductCreateDto(
                 PRODUCT_NAME,
                 PRODUCT_DESCRIPTION,
-                null,
+                100L,
                 AVAILABLE_QUANTITY,
                 PRICE
         );
+        when(productService.createNewProduct(invalidDto)).thenThrow(new CategoryNotFoundException(100L));
 
         mockMvc.perform(post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .accept(MediaType.APPLICATION_PROBLEM_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.title").value(CATEGORY_NOT_FOUND_MESSAGE))
                 .andExpect(jsonPath("$.detail").exists());
     }
 
@@ -242,7 +245,7 @@ public class ProductControllerIT {
         ProductCreateDto invalidDto = buildInvalidProductCreateDto(
                 PRODUCT_NAME,
                 PRODUCT_DESCRIPTION,
-                CATEGORY,
+                CATEGORY_ID,
                 -50,
                 PRICE
         );
@@ -254,7 +257,7 @@ public class ProductControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title").value(VALIDATION_FAILED_MESSAGE))
                 .andExpect(jsonPath("$.detail").exists());
     }
 
@@ -266,7 +269,7 @@ public class ProductControllerIT {
         ProductCreateDto invalidDto = buildInvalidProductCreateDto(
                 PRODUCT_NAME,
                 longDescription,
-                CATEGORY,
+                CATEGORY_ID,
                 AVAILABLE_QUANTITY,
                 PRICE
         );
@@ -278,7 +281,7 @@ public class ProductControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title").value(VALIDATION_FAILED_MESSAGE))
                 .andExpect(jsonPath("$.detail").exists());
     }
 
@@ -339,8 +342,8 @@ public class ProductControllerIT {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.title").value("Product not found"))
-                .andExpect(jsonPath("$.detail").value(PRODUCT_NOT_FOUND_MESSAGE + PRODUCT_ID));
+                .andExpect(jsonPath("$.title").value(PRODUCT_NOT_FOUND_MESSAGE))
+                .andExpect(jsonPath("$.detail").value(PRODUCT_NOT_FOUND_MESSAGE + ": " + PRODUCT_ID));
     }
 
     @Test
@@ -352,7 +355,7 @@ public class ProductControllerIT {
                 .id(PRODUCT_ID)
                 .name(UPDATED_PRODUCT_NAME)
                 .description(PRODUCT_DESCRIPTION)
-                .category(CATEGORY)
+                .categoryId(CATEGORY_ID)
                 .availableQuantity(UPDATED_QUANTITY)
                 .price(UPDATED_PRICE)
                 .build();
@@ -385,7 +388,7 @@ public class ProductControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title").value(VALIDATION_FAILED_MESSAGE))
                 .andExpect(jsonPath("$.detail").exists());
     }
 
@@ -405,7 +408,7 @@ public class ProductControllerIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.title").value("Validation failed"))
+                .andExpect(jsonPath("$.title").value(VALIDATION_FAILED_MESSAGE))
                 .andExpect(jsonPath("$.detail").exists());
     }
 
@@ -423,8 +426,8 @@ public class ProductControllerIT {
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.title").value("Product not found"))
-                .andExpect(jsonPath("$.detail").value(PRODUCT_NOT_FOUND_MESSAGE + PRODUCT_ID));
+                .andExpect(jsonPath("$.title").value(PRODUCT_NOT_FOUND_MESSAGE))
+                .andExpect(jsonPath("$.detail").value(PRODUCT_NOT_FOUND_MESSAGE + ": " + PRODUCT_ID));
     }
 
     @Test

@@ -8,6 +8,8 @@ tasks.withType(Test).configureEach {
     testClassesDirs = testing.suites.test.sources.output.classesDirs
     classpath = testing.suites.test.sources.runtimeClasspath
 
+    systemProperty 'user.timezone', 'UTC'
+
     testLogging {
         // set options for log level LIFECYCLE
         events TestLogEvent.FAILED,

@@ -9,7 +9,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,7 +17,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import static java.net.URI.create;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.ProblemDetail.forStatusAndDetail;
 
@@ -60,6 +58,46 @@ public class GlobalErrorHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
         problemDetail.setType(create("product-not-found"));
         problemDetail.setTitle("Product not found");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    ProblemDetail handleCategoryNotFound(CategoryNotFoundException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
+        problemDetail.setType(create("category-not-found"));
+        problemDetail.setTitle("Category not found");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CartNotFoundException.class)
+    ProblemDetail handleCartNotFound(CartNotFoundException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
+        problemDetail.setType(create("cart-not-found"));
+        problemDetail.setTitle("Cart not found");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    ProblemDetail handleOrderNotFound(OrderNotFoundException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
+        problemDetail.setType(create("order-not-found"));
+        problemDetail.setTitle("Order not found");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CartItemNotFoundException.class)
+    ProblemDetail handleCartItemNotFound(CartItemNotFoundException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
+        problemDetail.setType(create("cart-item-not-found"));
+        problemDetail.setTitle("Cart item not found");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(OrderItemNotFoundException.class)
+    ProblemDetail handleOrderItemNotFound(OrderItemNotFoundException exception) {
+        ProblemDetail problemDetail = forStatusAndDetail(NOT_FOUND, exception.getMessage());
+        problemDetail.setType(create("order-item-not-found"));
+        problemDetail.setTitle("Order item not found");
         return problemDetail;
     }
 

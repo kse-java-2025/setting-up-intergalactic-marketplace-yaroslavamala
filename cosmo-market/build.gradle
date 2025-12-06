@@ -43,13 +43,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation:3.3.4'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
     implementation 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    implementation 'org.liquibase:liquibase-core:4.30.0'
+    implementation 'org.postgresql:postgresql:42.7.4'
     implementation 'org.mapstruct:mapstruct:1.6.2'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testAnnotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
     testImplementation 'org.projectlombok:lombok:1.18.34'
@@ -58,4 +63,9 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    systemProperty 'user.timezone', 'UTC'
+}
+
+tasks.named('bootRun') {
+    systemProperty 'user.timezone', 'UTC'
 }
