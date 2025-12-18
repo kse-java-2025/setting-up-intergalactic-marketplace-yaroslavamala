@@ -1,6 +1,5 @@
 package com.cosmocats.cosmomarket.dto.product;
 
-import com.cosmocats.cosmomarket.domain.category.Category;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -14,7 +13,7 @@ public class ProductReturnDto {
     UUID id;
     String name;
     String description;
-    Category category;
+    Long categoryId;
     Integer availableQuantity;
     BigDecimal price;
 }

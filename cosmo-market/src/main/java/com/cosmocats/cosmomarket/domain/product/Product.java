@@ -1,6 +1,5 @@
 package com.cosmocats.cosmomarket.domain.product;
 
-import com.cosmocats.cosmomarket.domain.category.Category;
 import lombok.Builder;
 import lombok.Value;
 import java.math.BigDecimal;
@@ -12,7 +11,7 @@ public class Product {
     UUID id;
     String name;
     String description;
-    Category category;
+    Long categoryId;
     Integer availableQuantity;
     BigDecimal price;
 }

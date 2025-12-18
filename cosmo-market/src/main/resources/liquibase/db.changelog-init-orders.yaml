@@ -1,0 +1,97 @@
+databaseChangeLog:
+  - changeSet:
+      id: lab-3-orders
+      author: yaroslava
+      changes:
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: total_price
+                  type: DECIMAL(7, 2)
+
+        - createIndex:
+            tableName: orders
+            indexName: idx_orders_created_at
+            columns:
+              - column:
+                  name: created_at
+
+  - changeSet:
+      id: lab-3-order-item
+      author: yaroslava
+      changes:
+        - createTable:
+            tableName: order_item
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: item_price
+                  type: DECIMAL(7, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: order_item
+            baseColumnNames: order_id
+            referencedTableName: orders
+            referencedColumnNames: id
+            constraintName: fk_order_item_order
+
+        - addForeignKeyConstraint:
+            baseTableName: order_item
+            baseColumnNames: product_id
+            referencedTableName: products
+            referencedColumnNames: id
+            constraintName: fk_order_item_product
+
+        - addUniqueConstraint:
+            tableName: order_item
+            columnNames: order_id, product_id
+            constraintName: uq_order_product
+
+        - createIndex:
+            tableName: order_item
+            indexName: idx_order_item_order
+            columns:
+              - column:
+                  name: order_id
+
+        - createIndex:
+            tableName: order_item
+            indexName: idx_order_item_product
+            columns:
+              - column:
+                  name: product_id

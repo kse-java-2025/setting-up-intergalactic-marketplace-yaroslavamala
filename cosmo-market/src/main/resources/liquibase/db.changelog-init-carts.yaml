@@ -1,0 +1,81 @@
+databaseChangeLog:
+  - changeSet:
+      id: lab-3-carts
+      author: yaroslava
+      changes:
+        - createTable:
+            tableName: carts
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            tableName: carts
+            indexName: idx_carts_created_at
+            columns:
+              - column:
+                  name: created_at
+
+  - changeSet:
+      id: lab-3-cart-item
+      author: yaroslava
+      changes:
+        - createTable:
+            tableName: cart_item
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cart_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: product_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseTableName: cart_item
+            baseColumnNames: cart_id
+            referencedTableName: carts
+            referencedColumnNames: id
+            constraintName: fk_cart_item_cart
+
+        - addForeignKeyConstraint:
+            baseTableName: cart_item
+            baseColumnNames: product_id
+            referencedTableName: products
+            referencedColumnNames: id
+            constraintName: fk_cart_item_product
+
+        - addUniqueConstraint:
+            tableName: cart_item
+            columnNames: cart_id, product_id
+            constraintName: uq_cart_product
+
+        - createIndex:
+            tableName: cart_item
+            indexName: idx_cart_item_cart
+            columns:
+              - column:
+                  name: cart_id
